@@ -1,0 +1,120 @@
+#!/bin/bash
+## BASH-MAKE ==========================================================
+##   Utility to mimick some of GNU Make behavior, but run in a single
+##   bash shell. This executable can be used as the Bakefile, too,
+##   by adding the functions under this text, and setting
+##     STANDALONE=true
+##
+# Target functions MUST be of format: "name() { # Menu description"
+set -e
+# In standalone mode, this script also contains targets
+STANDALONE=false
+
+if [[ $STANDALONE = true ]]; then
+    BAKEFILE=$0
+else
+    if [[ "$1" = "__autocomplete__" ]]; then
+        echo '_bake_complete() {
+    local curr_arg
+    curr_arg=${COMP_WORDS[COMP_CWORD]}
+    if [[ $COMP_CWORD -eq 1 ]]; then
+      COMPREPLY=( $(compgen -W "$( bake __list__ ) -h -l -m" -- $curr_arg ) );
+    fi
+    }
+    complete -F _bake_complete bake
+    # Run me as: source <( bake  __autocomplete__ )
+    '
+        exit
+    fi
+    for BAKEFILE in Bakefile bakefile /dev/null; do
+        if [[ -f ./$BAKEFILE ]]; then
+            BAKEFILE=./$BAKEFILE
+            break
+        fi
+    done
+fi
+
+_flines() { cat "$BAKEFILE" | \
+        grep -E '^([^_][a-zA-Z0-9_\.]+)\(\) {.*'; }
+_menu() { _flines | while read line; do
+        if [[ "$line" =~ ([a-zA-Z0-9_\.]+)\(\).\{[\ #]*(.*) ]]; then
+            printf "\e[33m%+20s \e[36m [ %-50s ]\e[0m\n" \
+                "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+        fi
+    done; }
+_itemhelp() { funfound=0; cat "$BAKEFILE" | while read line; do
+        if [[ "$line" =~ ^("$1")\(\).\{[\ #]*(.*) ]]; then
+            printf "\e[33m%s \e[36m %s\e[0m\n" \
+                "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+            funfound=1
+        else
+            if [[ $funfound -eq 1 ]]; then
+                if [[ "$line" =~ ^[\ ]*#[\ ](.*) ]]; then
+                    printf "\e[36m%s\e[0m\n" \
+                    "${BASH_REMATCH[1]}"
+                else
+                  funfound=0
+                fi
+            fi
+        fi
+    done; }
+_smenu() { while true; do
+    selection=$( _flines | sed 's/().*//' | \
+            smenu -m "Select target (q: exit)" -n 22 -t 1 -a c:2,b i:7,b m:7,bu )
+    [[ -n "$selection" ]] && { _source_bakefile && "$selection"; } || { exit; }
+    done; exit; }
+_commands() { _flines | sed 's/().*//' | while read line; do
+        printf "^%s$|" "$line"
+    done | sed 's/.$//'; }
+_source_bakefile() {
+    if [[ $STANDALONE = false ]]; then
+        if [[ ! -f "$BAKEFILE" ]]; then
+            echo No Bakefile present >&2
+            exit 1
+        fi
+    . "$BAKEFILE"
+    fi; }
+
+case $1 in
+    "__list__") _flines | sed 's/().*//'; exit ;;
+    "-m") _smenu; exit ;;
+    "-l") _menu; exit ;;
+    "-h") if [[ -n "$2" ]]; then _itemhelp "$2"; else cat <<EOF
+Bash-Make: bake
+  Runs bash functions from Bakefile, like make would from Makefile.
+  Reserved arguments:
+    -h  This help. Add function name to get help for the target.
+    -l  List targets
+    -m  Menu of targets with 'smenu' command
+    __autocomplete__  get autocomplete function for bash
+
+Example Bakefile
+# help() { # This help. Note the exact function declaration + docs format.
+#     _menu
+# }
+# echo foo # NOTE: Bakefile gets sourced when read!
+# default() { # Default function will be run if present, and no target passed
+#   # Extra help to be read with -h
+#     echo "I'm running!"
+#     _smenu # interactive menu with 'smenu' command
+# }
+
+EOF
+    fi; exit ;;
+esac
+
+# Run commands
+_source_bakefile
+if [[ "$1" =~ $( _commands ) ]]; then
+    echo "Running target: $1"
+    "$@"
+elif [[ -n "$1" ]]; then
+    echo "Command '$1' not recognized"
+    _menu
+elif [[ -z "$1" ]]; then
+    if [[ "$( type -t default )" = function ]]; then
+        default
+    else
+        _menu
+    fi
+fi

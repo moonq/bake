@@ -1,0 +1,24 @@
+
+
+install() { # Install bake: required prefix as argument
+    # Prefix is  ~/.local/   or  /usr/local/
+    # The executable is put under PREFIX/bin/ and should be in PATH
+    if [[ -z "$1" ]]; then
+      echo "Prefix required, e.g. ~/.local/  or /usr/local/"
+      exit 1
+    fi
+
+    bakepath="$1/bin/bake"
+    bakepath=${bakepath//\/\//\/}
+    mkdir -p "$prefix"/bin
+    cp -v bake "$bakepath"
+    chmod -v 755 "$bakepath"
+    if [[ ! "$( which bake )" = "$bakepath" ]]; then
+      echo "'bake' in path seems to be different than installed version. PATH finds: "
+      which bake
+    fi
+    echo "Add autocompletion:
+
+    echo \"if [[ -x $bakepath ]]; then . <( $bakepath __autocomplete__ ); fi\" >> ~/.bashrc
+    "
+}
