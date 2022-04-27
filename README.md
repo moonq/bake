@@ -15,7 +15,8 @@ Run the command: `./bake` in this folder. Installation prefix is required
 to install, for example: `./bake  install ~/.local/`
 Finally, insert the autocomplete as explained in installer.
 
-Note: you can also just take the `bake` executable, and place in PATH.
+Note: you can also just take the `bake` executable, and place in PATH, and
+run `. <( bake __autocomplete __ )` to enable bash autocomplete.
 
 # Usage
 
