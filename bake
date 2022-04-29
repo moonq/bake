@@ -1,4 +1,5 @@
 #!/bin/bash
+## VERSION 22.4.1
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -35,9 +36,9 @@ else
 fi
 
 _flines() { cat "$BAKEFILE" | \
-        grep -E '^([^_][a-zA-Z0-9_\.]+)\(\) {.*'; }
+        grep -E '^([^_][a-zA-Z0-9_\.\-]+)\(\) {.*'; }
 _menu() { _flines | while read line; do
-        if [[ "$line" =~ ([a-zA-Z0-9_\.]+)\(\).\{[\ #]*(.*) ]]; then
+        if [[ "$line" =~ ([a-zA-Z0-9_\.\-]+)\(\).\{[\ #]*(.*) ]]; then
             printf "\e[33m%+20s \e[36m [ %-50s ]\e[0m\n" \
                 "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
         fi
@@ -90,6 +91,8 @@ Bash-Make: bake
 
 Example Bakefile
 # help() { # This help. Note the exact function declaration + docs format.
+#   # function names may contain characters: a-zA-Z0-9._-
+#   # functions starting with _ are not listed
 #     _menu
 # }
 # echo foo # NOTE: Bakefile gets sourced when read!
