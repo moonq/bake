@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.4.3
+## VERSION 22.4.4
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -15,24 +15,33 @@ if [[ $STANDALONE = true ]]; then
     BAKEFILE=$0
 else
     if [[ "$1" = "__autocomplete__" ]]; then
+        printf -v SELF "%s/%s" "$( cd "$(dirname "$0")" ; pwd -P )" "$( basename "$0" )"
         echo '_bake_complete() {
+    local BAKE="'$SELF'"
     local curr_arg
     curr_arg=${COMP_WORDS[COMP_CWORD]}
     if [[ $COMP_CWORD -eq 1 ]]; then
-      COMPREPLY=( $(compgen -W "$( bake __list__ ) -h -l -m" -- $curr_arg ) );
+      COMPREPLY=( $(compgen -W "$( $BAKE __list__ ) -h -l -m -f" -- $curr_arg ) );
+    fi
+    if [[ $COMP_CWORD -gt 1 ]]; then
+      compopt -o nospace
+      COMPREPLY=($(compgen -W "$( $BAKE _complete_${COMP_WORDS[1]} $curr_arg )" -- "$curr_arg"))
     fi
     }
     complete -F _bake_complete bake
-    # Run me as: source <( bake  __autocomplete__ )
+    # Run me as: source <( $BAKE  __autocomplete__ )
     '
         exit
     fi
-    for BAKEFILE in Bakefile bakefile /dev/null; do
-        if [[ -f ./$BAKEFILE ]]; then
-            BAKEFILE=./$BAKEFILE
-            break
-        fi
-    done
+    if [[ -z "$BAKEFILE" ]]; then
+        # BAKEFILE not set externally
+        for BAKEDEFAULT in Bakefile bakefile /dev/null; do
+            if [[ -f ./$BAKEDEFAULT ]]; then
+                BAKEFILE=./$BAKEDEFAULT
+                break
+            fi
+        done
+    fi
 fi
 
 _flines() { cat "$BAKEFILE" | \
@@ -127,16 +136,32 @@ fi
 
 # Run commands
 _source_bakefile
-if [[ "$1" =~ $( _commands ) ]]; then
-    echo "Running target: $1"
-    "$@"
-elif [[ -n "$1" ]]; then
-    echo "Command '$1' not recognized"
-    _menu
-elif [[ -z "$1" ]]; then
+if [[ -z "$1" ]]; then
+    # No argument given
     if [[ "$( type -t default )" = function ]]; then
+        # Run 'default' if exists
         default
     else
+        # or show menu
+        _menu
+    fi
+else
+    # Argument given
+    if [[ "$1" =~ $( _commands ) ]]; then
+        # Argument is one of the targets:
+        echo "Running target: $1"
+        "$@"
+    elif [[ "$1" =~ "_complete_"* ]]; then
+        if [[ "$( type -t $1 )" = function ]]; then
+            # target is a command line completer
+            "$@"
+        else
+            # but there is no defined completion
+            compgen -o plusdirs -f -- "${@: -1}"
+        fi
+    else
+        # no such command
+        echo "Command '$1' not recognized"
         _menu
     fi
 fi

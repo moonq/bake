@@ -20,3 +20,7 @@ install() { # Install bake: required prefix as argument
     echo \"if [[ -x $bakepath ]]; then . <( $bakepath __autocomplete__ ); fi\" >> ~/.bashrc
     "
 }
+
+_complete_install() {
+    echo "\~/.local /usr/local $( compgen -o plusdirs -f -- "$1" )"
+}
