@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.4.1
+## VERSION 22.4.2
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -43,6 +43,32 @@ _menu() { _flines | while read line; do
                 "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
         fi
     done; }
+_help() {
+    cat <<EOF
+Bash-Make: bake
+  Runs bash functions from Bakefile, like make would from Makefile.
+  Reserved arguments:
+    -h  This help. Add function name to get help for the target.
+    -f  [Bakefile]  Choose a different Bakefile than the default.
+    -l  List targets
+    -m  Menu of targets with 'smenu' command
+    __autocomplete__  get autocomplete function for bash
+
+Example Bakefile
+# help() { # This help. Note the exact function declaration + docs format.
+#   # function names may contain characters: a-zA-Z0-9._-
+#   # functions starting with _ are not listed
+#     _menu
+# }
+# echo foo # NOTE: Bakefile gets sourced when read!
+# default() { # Default function will be run if present, and no target passed
+#   # Extra help to be read with -h
+#     echo "I'm running!"
+#     _smenu # interactive menu with 'smenu' command
+# }
+
+EOF
+}
 _itemhelp() { funfound=0; cat "$BAKEFILE" | while read line; do
         if [[ "$line" =~ ^("$1")\(\).\{[\ #]*(.*) ]]; then
             printf "\e[33m%s \e[36m %s\e[0m\n" \
@@ -76,35 +102,23 @@ _source_bakefile() {
     . "$BAKEFILE"
     fi; }
 
-case $1 in
-    "__list__") _flines | sed 's/().*//'; exit ;;
-    "-m") _smenu; exit ;;
-    "-l") _menu; exit ;;
-    "-h") if [[ -n "$2" ]]; then _itemhelp "$2"; else cat <<EOF
-Bash-Make: bake
-  Runs bash functions from Bakefile, like make would from Makefile.
-  Reserved arguments:
-    -h  This help. Add function name to get help for the target.
-    -l  List targets
-    -m  Menu of targets with 'smenu' command
-    __autocomplete__  get autocomplete function for bash
-
-Example Bakefile
-# help() { # This help. Note the exact function declaration + docs format.
-#   # function names may contain characters: a-zA-Z0-9._-
-#   # functions starting with _ are not listed
-#     _menu
-# }
-# echo foo # NOTE: Bakefile gets sourced when read!
-# default() { # Default function will be run if present, and no target passed
-#   # Extra help to be read with -h
-#     echo "I'm running!"
-#     _smenu # interactive menu with 'smenu' command
-# }
-
-EOF
-    fi; exit ;;
-esac
+for (( i=1; i<=$#; i++ )); do
+  if [[ $i -eq 1 ]]; then
+    if [[ "${!i}" = "__list__" ]]; then _flines | sed 's/().*//'; exit; fi
+  fi
+  j=$(( i + 1 ))
+  if [[ "${!i}" = "-m" ]]; then _smenu; exit; fi
+  if [[ "${!i}" = "-l" ]]; then _menu; exit; fi
+  if [[ "${!i}" = "-f" ]]; then BAKEFILE="${!j}"; REMOVEARG="${i}"; fi
+  if [[ "${!i}" = "-h" ]]; then
+      if [[ -n "${!j}" ]]; then _itemhelp "${!j}"; else _help; fi
+      exit
+  fi
+done
+if [[ -n "$REMOVEARG" ]]; then
+  # remove args if Bakefile was modified
+  set -- "${@:1:REMOVEARG-1}" "${@:REMOVEARG+2}"
+fi
 
 # Run commands
 _source_bakefile

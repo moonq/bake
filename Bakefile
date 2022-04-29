@@ -1,5 +1,3 @@
-
-
 install() { # Install bake: required prefix as argument
     # Prefix is  ~/.local/   or  /usr/local/
     # The executable is put under PREFIX/bin/ and should be in PATH
