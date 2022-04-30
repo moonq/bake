@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.4.4
+## VERSION 22.4.5
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -10,29 +10,9 @@
 set -e
 # In standalone mode, this script also contains targets
 STANDALONE=false
-
 if [[ $STANDALONE = true ]]; then
     BAKEFILE=$0
 else
-    if [[ "$1" = "__autocomplete__" ]]; then
-        printf -v SELF "%s/%s" "$( cd "$(dirname "$0")" ; pwd -P )" "$( basename "$0" )"
-        echo '_bake_complete() {
-    local BAKE="'$SELF'"
-    local curr_arg
-    curr_arg=${COMP_WORDS[COMP_CWORD]}
-    if [[ $COMP_CWORD -eq 1 ]]; then
-      COMPREPLY=( $(compgen -W "$( $BAKE __list__ ) -h -l -m -f" -- $curr_arg ) );
-    fi
-    if [[ $COMP_CWORD -gt 1 ]]; then
-      compopt -o nospace
-      COMPREPLY=($(compgen -W "$( $BAKE _complete_${COMP_WORDS[1]} $curr_arg )" -- "$curr_arg"))
-    fi
-    }
-    complete -F _bake_complete bake
-    # Run me as: source <( $BAKE  __autocomplete__ )
-    '
-        exit
-    fi
     if [[ -z "$BAKEFILE" ]]; then
         # BAKEFILE not set externally
         for BAKEDEFAULT in Bakefile bakefile /dev/null; do
@@ -44,6 +24,24 @@ else
     fi
 fi
 
+_autocomplete() {
+    printf -v SELF "%s/%s" "$( cd "$(dirname "$0")" ; pwd -P )" "$( basename "$0" )"
+    echo '_bake_complete() {
+local BAKE="'$SELF'"
+local curr_arg
+curr_arg=${COMP_WORDS[COMP_CWORD]}
+if [[ $COMP_CWORD -eq 1 ]]; then
+  COMPREPLY=( $(compgen -W "$( $BAKE __list__ )" -- $curr_arg ) );
+fi
+if [[ $COMP_CWORD -gt 1 ]]; then
+  compopt -o nospace
+  COMPREPLY=($(compgen -W "$( $BAKE _complete_${COMP_WORDS[1]} $curr_arg )" -- "$curr_arg"))
+fi
+}
+complete -F _bake_complete bake
+# Run me as: source <( $BAKE  __autocomplete__ )
+'
+    exit; }
 _flines() { cat "$BAKEFILE" | \
         grep -E '^([^_][a-zA-Z0-9_\.\-]+)\(\) {.*'; }
 _menu() { _flines | while read line; do
@@ -119,14 +117,15 @@ for (( i=1; i<=$#; i++ )); do
   if [[ $i -eq 1 ]]; then
     if [[ "${!i}" = "__list__" ]]; then _flines | sed 's/().*//'; exit; fi
     if [[ "${!i}" = "__update__" ]]; then _update_self; exit; fi
+    if [[ "${!i}" = "__autocomplete__" ]]; then _autocomplete; exit; fi
+    if [[ "${!i}" = "-v" ]]; then grep "^## VERSION" "$0"; exit; fi
   fi
   j=$(( i + 1 ))
   if [[ "${!i}" = "-m" ]]; then _smenu; exit; fi
   if [[ "${!i}" = "-l" ]]; then _menu; exit; fi
   if [[ "${!i}" = "-f" ]]; then BAKEFILE="${!j}"; REMOVEARG="${i}"; fi
   if [[ "${!i}" = "-h" ]]; then
-      if [[ -n "${!j}" ]]; then _itemhelp "${!j}"; else _help; fi
-      exit
+      if [[ -n "${!j}" ]]; then _itemhelp "${!j}"; else _help; fi; exit
   fi
 done
 if [[ -n "$REMOVEARG" ]]; then
