@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.4.5
+## VERSION 22.5.11
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -42,7 +42,7 @@ complete -F _bake_complete bake
 # Run me as: source <( $BAKE  __autocomplete__ )
 '
     exit; }
-_flines() { cat "$BAKEFILE" | \
+_flines() { cat "$BAKEFILE" 2>/dev/null | \
         grep -E '^([^_][a-zA-Z0-9_\.\-]+)\(\) {.*'; }
 _menu() { _flines | while read line; do
         if [[ "$line" =~ ([a-zA-Z0-9_\.\-]+)\(\).\{[\ #]*(.*) ]]; then
