@@ -158,7 +158,7 @@ else
             "$@"
         else
             # but there is no defined completion
-            compgen -o plusdirs -f -- "${@: -1}"
+            compgen -f -d -- "${@: -1}"
         fi
     else
         # no such command
