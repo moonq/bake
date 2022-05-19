@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.5.11
+## VERSION 22.5.19
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -113,6 +113,8 @@ _update_self() {
         "https://raw.githubusercontent.com/moonq/bake/main/bake"
     chmod +x "$0"
 }
+@() { echo +"$@" >&2; "$@"; } # Print command before running it
+
 for (( i=1; i<=$#; i++ )); do
   if [[ $i -eq 1 ]]; then
     if [[ "${!i}" = "__list__" ]]; then _flines | sed 's/().*//'; exit; fi
