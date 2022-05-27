@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.4.5
+## VERSION 22.5.27
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -9,7 +9,7 @@
 # Target functions MUST be of format: "name() { # Menu description"
 set -e
 # In standalone mode, this script also contains targets
-STANDALONE=false
+STANDALONE=${STANDALONE:-false}
 if [[ $STANDALONE = true ]]; then
     BAKEFILE=$0
 else
@@ -148,7 +148,7 @@ else
     # Argument given
     if [[ "$1" =~ $( _commands ) ]]; then
         # Argument is one of the targets:
-        echo "Running target: $1"
+        echo "Running target: $1" >&2
         "$@"
     elif [[ "$1" =~ "_complete_"* ]]; then
         if [[ "$( type -t $1 )" = function ]]; then
@@ -160,7 +160,7 @@ else
         fi
     else
         # no such command
-        echo "Command '$1' not recognized"
+        echo "Command '$1' not recognized" >&2
         _menu
     fi
 fi
