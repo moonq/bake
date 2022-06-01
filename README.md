@@ -11,6 +11,21 @@ If you want to use the interactive menu, install https://github.com/p-gen/smenu
 
 # Install
 
+## Quick install:
+```
+curl https://raw.githubusercontent.com/moonq/bake/main/bake > ~/.local/bin/bake
+chmod +x ~/.local/bin/bake
+echo '. <( bake __autocomplete __ )' >> ~/.bashrc
+```
+
+## Update installation
+
+Run  `bake __update__`
+
+## Install from repository
+
+Clone the repository.
+
 Run the command: `./bake` in this folder. Installation prefix is required
 to install, for example: `./bake  install ~/.local/`
 Finally, insert the autocomplete as explained in installer.
