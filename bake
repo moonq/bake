@@ -62,6 +62,10 @@ Bash-Make: bake
     -m  Menu of targets with 'smenu' command
     __autocomplete__  get autocomplete function for bash
 
+  Targets can get arguments, read from the command line.
+  Multiple targets can be run by passing them comma separated, but second
+  arguments can not be used in that case.
+
 Example Bakefile
 # help() { # This help. Note the exact function declaration + docs format.
 #   # function names may contain characters: a-zA-Z0-9._-
@@ -153,7 +157,7 @@ else
         # Argument is one of the targets:
         echo "Running target: $1" >&2
         "$@"
-    elif [[ "$1" =~ "_complete_"* ]]; then
+    elif [[ "$1" =~ "_complete_".* ]]; then
         if [[ "$( type -t $1 )" = function ]]; then
             # target is a command line completer
             "$@"
@@ -161,6 +165,12 @@ else
             # but there is no defined completion
             compgen -f -d -- "${@: -1}"
         fi
+    elif [[ "$1" =~ .*",".* ]]; then
+        # Target is comma separated, run individually.
+        IFS=',' read -ra CMDLIST <<< "$1"
+        for CMD in "${CMDLIST[@]}"; do
+            "$0" "$CMD"
+        done
     else
         # no such command
         echo "Command '$1' not recognized" >&2
