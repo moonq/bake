@@ -1,11 +1,12 @@
 #!/bin/bash
-## VERSION 22.5.27
+## VERSION 22.6.1
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
 ##   by adding the functions under this text, and setting
 ##     STANDALONE=true
 ##
+## LICENSE:  The Unlicense, https://github.com/moonq/bake/blob/main/LICENSE
 # Target functions MUST be of format: "name() { # Menu description"
 set -e
 # In standalone mode, this script also contains targets
