@@ -165,5 +165,6 @@ else
         # no such command
         echo "Command '$1' not recognized" >&2
         _menu
+        exit 1
     fi
 fi
