@@ -1,20 +1,42 @@
 
-completion1() {
-  echo Args: "$@"
+BAKE=$( readlink -f ../bake )
+internals() {
+    _yecho "flines function"
+    _assert_eq "$( cd internals; $BAKE flines | wc -l )" "4"
+    _yecho "commands function"
+    _assert_eq "$( cd internals; $BAKE commands )" "^target1$|^target2$|^flines$|^commands$"
+    _yecho "Not a target should fail"
+    ( cd internals; $BAKE non-existent ) && { _fail; } || { _pass; }
+
+    _yecho "Item help"
+    _assert_eq "$( cd internals; $BAKE -h target2 | tail -n1 )" $'\e[36mSub help\e[0m'
+
+    _yecho "Multiple targets"
+    _assert_eq "$( cd internals; $BAKE target1,target2 )" $'1\n2'
 }
 
-_complete_completion1() {
-  compgen -o plusdirs -f -- "$1"
+
+
+
+
+
+_assert_eq() {
+   if [[ "$1" = "$2" ]]; then
+       _pass
+   else
+       echo Expect: "$2"
+       echo Received: "$1"
+       _fail
+   fi
 }
 
-completion2() {
-  echo Hard coded choices: "$@"
+_fail() {
+    _recho "Test failed"
+    exit 1
 }
-
-_complete_completion2() {
-  echo "choice1 alternative2"
+_pass() {
+    _gecho "Test Passed"
 }
-
-nocompletion() {
-  echo Args: "$@"
-}
+_gecho() { printf  '\e[1;32m%s\e[0m\n' "$1"; }
+_recho() { printf  '\e[1;31m%s\e[0m\n' "$1"; }
+_yecho() { printf  '\e[1;33m%s\e[0m\n' "$1"; }

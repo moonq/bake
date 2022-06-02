@@ -1,0 +1,20 @@
+
+completion1() {
+  echo Args: "$@"
+}
+
+_complete_completion1() {
+  compgen -o plusdirs -f -- "$1"
+}
+
+completion2() {
+  echo Hard coded choices: "$@"
+}
+
+_complete_completion2() {
+  echo "choice1 alternative2"
+}
+
+nocompletion() {
+  echo Args: "$@"
+}
