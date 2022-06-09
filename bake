@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.6.2
+## VERSION 22.6.8
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -114,7 +114,7 @@ _source_bakefile() {
     . "$BAKEFILE"
     fi; }
 _update_self() {
-    printf "Update %s => %s\n" \
+    printf "\e[36mUpdate: %s ▶ %s\e[0m\n" \
         "$( grep "^## VERSION" "$0" | awk '{ print $3 }' )" \
         "$( curl -s -S -f \
             "https://raw.githubusercontent.com/moonq/bake/main/bake" | \
@@ -124,7 +124,7 @@ _update_self() {
     chmod +x "$0"
     echo Updated. >&2
 }
-@() { echo +"$@" >&2; "$@"; } # Print command before running it
+@() { printf "\e[36m▶ $@\e[0m\n" >&2; "$@"; } # Print command before running it
 
 for (( i=1; i<=$#; i++ )); do
   if [[ $i -eq 1 ]]; then

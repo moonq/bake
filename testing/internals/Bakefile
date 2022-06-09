@@ -1,6 +1,6 @@
 
 target1() {
-    echo 1
+    @ echo 1
 }
 target2() { # Target description
 # Sub help
