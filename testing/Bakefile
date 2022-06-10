@@ -2,9 +2,9 @@
 BAKE=$( readlink -f ../bake )
 internals() {
     _yecho "flines function"
-    _assert_eq "$( cd internals; $BAKE flines | wc -l )" "4"
+    _assert_eq "$( cd internals; $BAKE flines | wc -l )" "5"
     _yecho "commands function"
-    _assert_eq "$( cd internals; $BAKE commands )" "^target1$|^target2$|^flines$|^commands$"
+    _assert_eq "$( cd internals; $BAKE commands )" "^target1$|^target2$|^flines$|^commands$|^echoing$"
     _yecho "Not a target should fail"
     ( cd internals; $BAKE non-existent ) && { _fail; } || { _pass; }
 

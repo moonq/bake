@@ -1,6 +1,6 @@
 
 target1() {
-    @ echo 1
+    echo 1
 }
 target2() { # Target description
 # Sub help
@@ -14,4 +14,11 @@ flines() {
 
 commands() {
     _commands
+}
+
+echoing() {
+    @ echo some command
+    @ echo escaped \
+       command \
+       follows
 }
