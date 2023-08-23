@@ -1,5 +1,5 @@
 #!/bin/bash
-## VERSION 22.6.10
+## VERSION 23.8.23
 ## BASH-MAKE ==========================================================
 ##   Utility to mimick some of GNU Make behavior, but run in a single
 ##   bash shell. This executable can be used as the Bakefile, too,
@@ -12,13 +12,13 @@ set -e
 # In standalone mode, this script also contains targets
 STANDALONE=${STANDALONE:-false}
 if [[ $STANDALONE = true ]]; then
-    BAKEFILE=$0
+    export BAKEFILE=$0
 else
     if [[ -z "$BAKEFILE" ]]; then
         # BAKEFILE not set externally
         for BAKEDEFAULT in Bakefile bakefile /dev/null; do
             if [[ -f ./$BAKEDEFAULT ]]; then
-                BAKEFILE=./$BAKEDEFAULT
+                export BAKEFILE=./$BAKEDEFAULT
                 break
             fi
         done

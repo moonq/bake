@@ -72,6 +72,9 @@ _subcommand() {
 echo foo # NOTE: Bakefile gets sourced when read!
 somevar=value
 
+if [ -z "$BAKEFILE" ]; then
+   echo This part is run if the file is sourced and not run in Bake
+fi
 
 ```
 
